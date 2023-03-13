@@ -82,8 +82,8 @@ def get_api_answer(timestamp: int) -> dict:
             params=params
         )
         logger.info(f'Запрос {ENDPOINT}, '
-                     f'{HEADERS}, {params}, '
-                     f'успешно отправлен.')
+                    f'{HEADERS}, {params}, '
+                    f'успешно отправлен.')
     except requests.RequestException as error:
         raise err.RequestExceptionError(f'Ошибка {error}, {timestamp}')
     if homework_status.status_code != HTTPStatus.OK:
@@ -94,7 +94,7 @@ def get_api_answer(timestamp: int) -> dict:
         )
     try:
         return homework_status.json()
-    except json.JSONDecodeError as error:
+    except json.decoder.JSONDecodeError as error:
         raise err.NotJsonError(f'Формат ответа не JSON: {error}')
 
 
