@@ -38,8 +38,9 @@ logger = logging.getLogger(__name__)
 def check_tokens() -> bool:
     """Проверяет переменные окружения."""
     if not all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)):
-        logger.critical('Отсутствуют переменные окружения')
-        sys.exit()
+        error_message = 'Отсутствуют переменные окружения'
+        logger.critical(error_message)
+        sys.exit(error_message)
 
 
 def send_message(bot: telegram.Bot, message: str) -> None:
@@ -53,8 +54,7 @@ def send_message(bot: telegram.Bot, message: str) -> None:
         )
     except TelegramError as telegram_error:
         logger.error(
-            f'Сбой отправки сообщения: {message}',
-            telegram_error,
+            f'Сбой отправки сообщения: {message}, {telegram_error}',
             exc_info=True)
     else:
         logger.debug(
@@ -64,9 +64,8 @@ def send_message(bot: telegram.Bot, message: str) -> None:
 def get_api_answer(timestamp: int) -> dict:
     """Запрашивает получение ответа."""
     params = {'from_date': timestamp}
-    logger.info(f'Запрос {ENDPOINT}, '
-                f'{HEADERS}, {params}, '
-                f'успешно отправлен.')
+    logger.info(f'Попытка отправки запроса: {ENDPOINT}, '
+                f'{HEADERS}, {params}, ')
     try:
         homework_status = requests.get(
             ENDPOINT,
@@ -133,10 +132,12 @@ def main():
     while True:
         try:
             response = get_api_answer(timestamp)
-            homework = check_response(response)
-            if not homework:
-                logging.debug('Список домашек пуст')
-            message = parse_status(homework[0])
+            homeworks = check_response(response)
+            if not homeworks:
+                message = 'Список домашек пуст'
+                logging.debug(message)
+            else:
+                message = parse_status(homeworks[0])
             if message == last_status:
                 logger.debug('Обновлений нет')
             else:
